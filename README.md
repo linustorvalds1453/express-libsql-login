@@ -33,5 +33,6 @@ Jetzt können Sie den Server starten:
 node .
 ```
 
+*Notiz* : Der Server nutzt den Port 3000, aber Sie können das konfigurieren.
 
 Geben Sie unbedingt einen Stern, wenn Ihnen das Repository gefallen hat!
