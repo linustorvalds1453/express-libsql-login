@@ -6,6 +6,9 @@ const libSQL = new LibSQL('./cerez.sqlite')
 const session = require('express-session');
 const cache = require('@rednexie/cache.db')
 
+
+require('dotenv').config()
+
 const lodash = require('lodash'); 
 const moment = require('moment'); 
 const uuid = require('uuid'); 
@@ -16,9 +19,9 @@ const port = process.env.PORT || 3199
 const bodyParser = require('body-parser')
 const cookieParser = require('cookie-parser')
 const express = require('express')
-const ejs = require('ejs')
 const app = express();
 
+let online = 0;
 
 const encrypt = require('./modules/enc')
 
@@ -83,26 +86,29 @@ app.post('/login', (req, res) => {
   const requestId = generateUniqueId();
 
   if (kullanici === undefined || parola === undefined || !kullanici || !parola) {
-      return res.status(400).json({ error: 'Kullanıcı adı ve parola gereklidir' });
+      return res.status(400).json({ durum: 'başarısız', mesaj: 'Kullanıcı adı ve parola gereklidir' });
   }
 
 
-  db.get('SELECT * FROM leblebi WHERE kullanici_adi = ? AND parola = ?', [kullanici, parola], (err, row) => {
-      if (err) {
-          console.error('Internal error occurred', err); 
-          return res.status(500).json({ durum: 'başarısız', mesaj: 'İç Sunucu Hatası' });
-      }
-
-      if (!row) {
-          return res.status(401).json({ durum: 'başarısız', mesaj: 'Geçersiz kullanıcı adı veya parola' });
-      }
-
+  try{
+    const row = libSQL.prepare('SELECT * FROM leblebi WHERE kullanici_adi = ? AND parola = ?').get(kullanici, parola);
+    
+    if(row){
       res.cookie('leblebi', row.cerez, { httpOnly: false })
       res.json({ durum: 'başarılı', mesaj: 'Başarıyla giriş yaptınız' })
+    }
+    else{
+      res.json({ durum: 'başarılı', mesaj: 'Böyle bir kullanıcı adı şifre kombinasyonu bulunamadı.' })
+    }
+  }
+  catch(err){
+    console.error(err)
+    return res.status(500).json({ durum: 'başarısız', mesaj: 'sunucuda beklenmeyen bir hata oluştu.'})
+  }
+
   
     
 });
-})
 
 
 
@@ -115,6 +121,7 @@ app.post('/signup', async (req, res) => {
     eposta: Joi.string().email()
   })
 
+  signupSchema.validateAsync(req.body)
   
 
   if (kullanici === null || parola === null || !kullanici || !parola) {
@@ -129,21 +136,21 @@ app.post('/signup', async (req, res) => {
 
   const currentDate = formatCurrentDate(new Date());
   console.log(`Current date: ${currentDate}`);
-
+  
   const cerez = encrypt(btoa(require('crypto').randomUUID()));
-  let shuffledData = shuffleArray([kullanici, parola, eposta, cerez]);
-
-  db.run('INSERT INTO leblebi (kullanici_adi, parola, eposta, cerez) VALUES (?, ?, ?, ?)', shuffledData, (err) => {
-      if (err) {
-          return res.status(500).json({ durum: 'başarısız', error: 'İç Sunucu Hatası' });
-      }
+  try{
+    libSQL.prepare('INSERT INTO leblebi (kullanici_adi, parola, eposta, cerez) VALUES (?, ?, ?, ?)').run(kullanici, parola, eposta, cerez)
+  }
+  catch(err){
+    console.error(err);
+    return res.status(400).json({ durum: 'başarısız', mesaj: 'Böyle bir kullanıcı var.'})
+  }
+  userAdd()
+  return res.status(201).send({ durum: 'başarılı', mesaj: 'Başarıyla kullanıcı olusturuldu' });
       
 
-      userAdd()
-      return res.status(201).send({ durum: 'başarılı', mesaj: 'Başarıyla kullanıcı olusturuldu' });
-  });
-});
 
+});
 
 app.get('/logout', (req, res) => {
   res.removeHeader('cookie');
