@@ -5,9 +5,9 @@ Node.js Loginssystem mit express als Webserver und LibSQL als Datenbank.
 
 ### Abhängigkeiten
 
-- Express
-- LibSQL
-- BodyParser
+- express
+- libsql
+- body-parser
 - dotenv
 - Joi
 - express-session
