@@ -1,6 +1,6 @@
 ## express-libsql-login
 
-Node.js Loginssystem mit express als Webserver und LibSQL als Datenbank.
+Node.js Anmeldesystem mit express als Webserver und LibSQL als Datenbank.
 
 
 ### Abhängigkeiten
