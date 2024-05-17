@@ -9,7 +9,7 @@ Node.js Loginssystem mit express als Webserver und LibSQL als Datenbank.
 - libsql
 - body-parser
 - dotenv
-- Joi
+- joi
 - express-session
 - express-cookie
 
@@ -27,4 +27,11 @@ Dann haben Sie die Abhängigkeiten mit npm zu installieren:
 npm install
 ```
 
-Jetzt können 
+Jetzt können Sie den Server starten:
+
+```
+node .
+```
+
+
+Geben Sie unbedingt einen Stern, wenn Ihnen das Repository gefallen hat!
